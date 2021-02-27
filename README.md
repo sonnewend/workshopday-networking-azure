@@ -3,7 +3,7 @@
 Hands-on Lab
 
 ## Workshop Day
-## Exercise #01 - Deploy Virtual Networks (20 minutes)
+## Exercise #01 - Deploy Virtual Networks (30 minutes)
 
 1. In the Azure portal, search for and select **Virtual networks**, and, on the **Virtual networks** blade, click **+ Add**.
 
@@ -38,7 +38,7 @@ Hands-on Lab
 
 1. Explore properties to Virtual networks.
 
-## Exercise #02 - Deploy Virtual Machine (20 minutes)
+## Exercise #02 - Deploy Virtual Machine (30 minutes)
 
 1. In the Azure portal, search for and select **Virtual machines** and, on the **Virtual machines** blade, click **+ Add**.
 
@@ -99,7 +99,7 @@ Hands-on Lab
 
 1. Connect Virtual machine.
 
-## Exercise #03 - Configure Azure DNS for internal name resolution (20 minutes)
+## Exercise #03 - Configure Azure DNS for internal name resolution (30 minutes)
 
 1. In the Azure portal, search for and select **Private DNS zones** and, on the **Private DNS zones** blade, click **+ Add**.
 
@@ -148,7 +148,7 @@ Hands-on Lab
 
 1. Verify that the output of the command includes the private IP address of **VMHub01**.
 
-## Exercise #04 - Network Security groups (20 minutes)
+## Exercise #04 - Network Security groups (30 minutes)
 
 1. In the Azure portal, search for and select **Network security groups**, and, on the **Network security groups** blade, click **+ Add**.
 
@@ -296,7 +296,7 @@ Hands-on Lab
    ```
 1. Examine the output of the command and verify that the connection was successful.
 
-## Project #01 - Hub-spoke Archicture (90 minutes)
+## Project - Deploy Hub-spoke Archicture (90 minutes)
 
 Implement a Hub-spoke topology
 
