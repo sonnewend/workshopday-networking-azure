@@ -92,7 +92,7 @@ Hands-on Lab
 1. Click **Next: Advanced >**, on the **Advanced** tab of the **Custom data and cloud init** blade, add script for install NGINX Web Server.
 
    ```shell
-   #cloud-config
+#cloud-config
 package_upgrade: true
 packages:
   - nginx
