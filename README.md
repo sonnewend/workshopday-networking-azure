@@ -308,10 +308,10 @@ Implement a Hub-spoke topology
 - VNET Peering connection in the hub to allow gateway transit;
 - VNET Peering connection in each spokes to use remote gateways;
 - VNET Peering connections to allow forwarded traffic;
+- Azure Bastion on the Hub network;
 - Azure Firewall on the Hub network;
 - Custom Route tables to address prefix "0.0.0.0" and next hop type to virtual applicance;
-- Network rule Azure Firewall all traffic;
-- DNAT rules Azure Firewall to destination Hub Virtual machine.
+- Network rule Azure Firewall all traffic.
 
 References: [Hub-spoke network topology](https://docs.microsoft.com/en-us/azure/architecture/reference-architectures/hybrid-networking/hub-spoke)
 
