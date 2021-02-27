@@ -303,11 +303,10 @@ Implement a Hub-spoke topology
    ![Screenshot of the Hub-spoke](/AllFiles/Images/Hub-Spoke.png)
 
 **Important Notes**
-- Three Virtual Networks;
+- Three Virtual Networks and VNET Peering;
 - Gateway VPN on the Hub network;
 - VNET Peering connection in the hub to allow gateway transit;
 - VNET Peering connection in each spokes to use remote gateways;
-- VNET Peering connections to allow forwarded traffic;
 - Azure Bastion on the Hub network;
 - Azure Firewall on the Hub network;
 - Custom Route tables to address prefix "Address Space destination" and next hop type to virtual applicance;
