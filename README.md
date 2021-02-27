@@ -310,6 +310,7 @@ Implement a Hub-spoke topology
 - VNET Peering connections to allow forwarded traffic;
 - Azure Bastion on the Hub network;
 - Azure Firewall on the Hub network;
+- Custom Route tables to address prefix "Address Space destination" and next hop type to virtual applicance;
 - Custom Route tables to address prefix "0.0.0.0" and next hop type to virtual applicance;
 - Network rule Azure Firewall all traffic.
 
