@@ -1,425 +1,360 @@
-# Workshop Day Migracao Datacenter para Nuvem
+# Workshop Day Networking do Azure
 
 Hands-on Lab
 
 ## Workshop Day
-## Exercise #01 - Deploy the On-premises environment (30 minutes)
+## Exercise #01 - Deploy Virtual Networks (20 minutes)
+
+1. In the Azure portal, search for and select **Virtual networks**, and, on the **Virtual networks** blade, click **+ Add**.
+
+1. Create a virtual network with the following settings (leave others with their default values):
+
+    | Setting | Value |
+    | --- | --- |
+    | Subscription | the name of the Azure subscription you will be using in this lab |
+    | Resource Group | (create new) **RG-Network-Hub** |
+    | Name | **VNET-Hub** |
+    | Region | the name of any Azure region available in the subscription you will use in this lab |
+    | IPv4 address space | **10.1.0.0/16** |
+    | Subnet name | **Default** |
+    | Subnet address range | **10.1.1.0/24** |
+     | | |
+      
+1. Accept the defaults and click **Review and Create**. Let validation occur, and hit **Create** again to submit your deployment.
+
+1. Once the deployment completes browse for **Virtual Networks** in the portal search bar. Within **Virtual networks** blade, click on the newly created virtual network.
+
+1. On the virtual network blade, click **Subnets** and then click **+ Subnet**. 
+
+1. Create a subnet with the following settings (leave others with their default values):
+
+    | Setting | Value |
+    | --- | --- |
+    | Name | **Public** |
+    | Address range (CIDR block) | **10.1.100.0/24** |
+    | Network security group | **None** |
+    | Route table | **None** |
+    | | |
+
+1. Explore properties to Virtual networks.
+
+## Exercise #02 - Deploy Virtual Machine (20 minutes)
+
+1. In the Azure portal, search for and select **Virtual machines** and, on the **Virtual machines** blade, click **+ Add**.
+
+1. On the **Basics** tab of the **Create a virtual machine** blade, specify the following settings (leave others with their default values):
+
+    | Setting | Value | 
+    | --- | --- |
+    | Subscription | the name of the Azure subscription you will be using in this lab |
+    | Resource group | the name of a new resource group **RG-VMs-Hub** |
+    | Virtual machine name | **VMHub01** |
+    | Region | select same region the Resouce group | 
+    | Availability options | **No** |
+    | Image | **Ubuntu Server 18.04 LTS - Gen1** |
+    | Azure Spot instance | **No** |
+    | Size | **Standard_B1ms** |
+    | Authentication type | Password |
+    | Username | **admaz** |
+    | Password | **Azur3Exp3rt*** |
+    | Public inbound ports | **SSH (22)** |
+     | | |
+
+1. Click **Next: Disks >** and, on the **Disks** tab of the **Create a virtual machine** blade, specify the following settings (leave others with their default values):
+
+    | Setting | Value | 
+    | --- | --- |
+    | OS disk type | **Standard SSD** |
+    | Enable Ultra Disk compatibility | **No** |
+
+1. Click **OK** and, back on the **Networking** tab of the **Create a virtual machine** blade, specify the following settings (leave others with their default values):
+
+    | Setting | Value | 
+    | --- | --- |
+    | Virtual Network | **VNET-Hub** |
+    | Subnet | **Default** |
+    | Public IP | **VMHub01-PI** |
+    | NIC network security group | **Basic** |
+    | Accelerated networking | **Off** |
+	| Inbound Ports | **SSH (22)** |
+    | Place this virtual machine behind an existing load balancing solution? | **No** |
+    | | |
+
+1. Click **Next: Management >** and, on the **Management** tab of the **Create a virtual machine** blade, specify the following settings (leave others with their default values):
+
+    | Setting | Value | 
+    | --- | --- |
+    | Boot diagnostics | **Enable with custom storage account** |
+    | Diagnostics storage account | create new |
+    | Properties storage account | Name: **sadiag####**, Account kind: StorageV2, Performance: Standard, Replication: Locally-redundant-storage (LRS) |
+    | Enable auto-shutdown | off |   
+    
+1. Click **Next: Advanced >**, on the **Advanced** tab of the **Custom data and cloud init** blade, add script for install NGINX Web Server.
+
+   ```shell
+   #cloud-config
+package_upgrade: true
+packages:
+  - nginx
+  - nodejs
+  - npm
+write_files:
+  - owner: www-data:www-data
+  - path: /etc/nginx/sites-available/default
+    content: |
+      server {
+        listen 80;
+        location / {
+          proxy_pass http://localhost:3000;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection keep-alive;
+          proxy_set_header Host $host;
+          proxy_cache_bypass $http_upgrade;
+        }
+      }
+  - owner: azureuser:azureuser
+  - path: /home/azureuser/myapp/index.js
+    content: |
+      var express = require('express')
+      var app = express()
+      var os = require('os');
+      app.get('/', function (req, res) {
+        res.send('Hello World from host ' + os.hostname() + '!')
+      })
+      app.listen(3000, function () {
+        console.log('Hello world app listening on port 3000!')
+      })
+runcmd:
+  - service nginx restart
+  - cd "/home/azureuser/myapp"
+  - npm init
+  - npm install express -y
+  - nodejs index.js
+   ```
 
-## Requirements
+1. Click **Review + Create**.
 
-1. You will need Owner or Contributor permissions for an Azure subscription to use in the lab.
+1. On the **Review + Create** blade, click **Create**.
 
-2. Your subscription must have sufficient unused quota to deploy the VMs used in this lab. To check your quota:
+1. Connect Virtual machine.
 
-    - Log in to the [Azure portal](https://portal.azure.com), select **All services** then **Subscriptions**. Select your subscription, then choose **Usage + quotas**.
-  
-    - From the **Select a provider** drop-down, select **Microsoft.Compute**.
-  
-    - From the **All service quotas** drop down, select **Standard DSv3 Family vCPUs**, **Standard FSv2 Family vCPUs** and **Total Regional vCPUs**.
-  
-    - From the **All locations** drop down, select the location where you will deploy the lab.
-  
-    - From the last drop-down, select **Show all**.
-  
-    - Check that the selected quotas have sufficient unused capacity:
-  
-        - Standard DSv3 Family vCPUs: **at least 8 vCPUs**.
-  
-        - Standard FSv2 Family vCPUs: **at least 6 vCPUs**.
+## Exercise #03 - Configure Azure DNS for internal name resolution (20 minutes)
 
-        - Total Regional vCPUs: **at least 14 vCPUs**.
+1. In the Azure portal, search for and select **Private DNS zones** and, on the **Private DNS zones** blade, click **+ Add**.
 
-    > **Note:** If you are using an Azure Pass subscription, you may not meet the vCPU quotas above. In this case, you can still complete the lab.
+1. Create a private DNS zone with the following settings (leave others with their default values):
 
-## Deploy the on-premises environment
+    | Setting | Value |
+    | --- | --- |
+    | Subscription | the name of the Azure subscription you are using in this lab |
+    | Resource Group | **RG-Network-Hub** |
+    | Name | **azureexpert.corp** |
 
-1. Deploy the template **SmartHotelHost.json** to a new resource group. This template deploys a virtual machine running nested Hyper-V, with 4 nested VMs. This comprises the 'on-premises' environment which you will assess and migrate during this lab.
+1. Click Review and Create. Let validation occur, and hit Create again to submit your deployment.
 
-    You can deploy the template by selecting the 'Deploy to Azure' button below. You will need to create a new resource group **RG-SmartHotel-Onpremises**. You will also need to select a location **East US 2** close to you to deploy the template to. Then choose **Review + create** followed by **Create**. 
+    >**Note**: Wait for the private DNS zone to be created. This should take about 2 minutes.
 
-    <a href="https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fcloudworkshop.blob.core.windows.net%2Fline-of-business-application-migration%2Fsept-2020%2FSmartHotelHost.json" target="_blank">![Button to deploy the SmartHotelHost template to Azure.](/AllFiles/Images/deploy-to-azure.png)</a>
+1. Click **Go to resource** to open the **azureexpert.corp** DNS private zone blade.
 
-    > **Note:** The template will take around 6-7 minutes to deploy. Once template deployment is complete, several additional scripts are executed to bootstrap the lab environment. **Allow at least 1 hour from the start of template deployment for the scripts to run.**
+1. On the **azureexpert.corp** private DNS zone blade, in the **Settings** section, click **Virtual network links**
 
-### Verify the on-premises environment
+1. Click **+ Add** to create a virtual network link with the following settings (leave others with their default values):
 
-1. Navigate to the **SmartHotelHost** VM that was deployed by the template in the previous step.
+    | Setting | Value |
+    | --- | --- |
+    | Link name | **VNL-Hub** |
+    | Subscription | the name of the Azure subscription you are using in this lab |
+    | Virtual network | **VNET-Hub** |
+    | Enable auto registration | enabled |
 
-2. Make a note of the public IP address.
+1. Click **OK**.
 
-3. Open a browser tab and navigate to **http://\<SmartHotelHostIP-Address\>**. You should see the SmartHotel application, which is running on nested VMs within Hyper-V on the SmartHotelHost. (The application doesn't do much: you can refresh the page to see the list of guests or select 'CheckIn' or 'CheckOut' to toggle their status.)
+    >**Note:** Wait for the virtual network link to be created. This should take less than 1 minute.
 
-    ![Browser screenshot showing the SmartHotel application.](/AllFiles/Images/smarthotel.png)
+1. On the **azureexpert.corp** private DNS zone blade, in the sidebar, click **Overview**
 
-    > **Note:** If the SmartHotel application is not shown, wait 10 minutes and try again. It takes **at least 1 hour** from the start of template deployment. You can also check the CPU, network and disk activity levels for the SmartHotelHost VM in the Azure portal, to see if the provisioning is still active.
+1. Verify that the DNS records for **VMHub01** appear in the list of record sets as **Auto registered**.
 
-You should follow all steps provided *before* performing the Hands-on lab.
+    >**Note:** You might need to wait a few minutes and refresh the page if the record sets are not listed.
 
-## Solution architecture
+1. Switch to the SSH session to **VMHub01**.
 
-The SmartHotel application comprises 4 VMs hosted in Hyper-V:
+1. In the Terminal console, run the following to test internal name resolution of the **az104-04-vm1** DNS record set in the newly created private DNS zone:
 
-- **Database tier** Hosted on the smarthotelSQL1 VM, which is running Windows Server 2016 and SQL Server 2017.
+   ```shell
+   nslookup vmhub01.azureexpert.corp
+   ```
 
-- **Application tier** Hosted on the smarthotelweb2 VM, which is running Windows Server 2012 R2.
+1. Verify that the output of the command includes the private IP address of **VMHub01**.
 
-- **Web tier** Hosted on the smarthotelweb1 VM, which is running Windows Server 2012 R2.
+## Exercise #04 - Network Security groups (20 minutes)
 
-- **Web proxy** Hosted on the  UbuntuWAF VM, which is running Nginx on Ubuntu 18.04 LTS.
+1. In the Azure portal, search for and select **Network security groups**, and, on the **Network security groups** blade, click **+ Add**.
 
-For simplicity, there is no redundancy in any of the tiers.
+1. Create a network security group with the following settings (leave others with their default values):
 
-![A slide shows the on-premises SmartHotel application architecture.](/AllFiles/Images/overview.png)
+    | Setting | Value |
+    | --- | --- |
+    | Subscription | the name of the Azure subscription you are using in this lab |
+    | Resource Group | **RG-Network-Hub** |
+    | Name | **NSG-WEB** |
+    | Region | the name of the Azure region where you deployed all other resources in this lab |
 
-## Lab #02 - Discover and assess the on-premises environment (30 minutes)
+1. On the deployment blade, click **Go to resource** to open the **NSG-WEB** network security group blade. 
 
-1. Open your browser, navigate to **https://portal.azure.com**, and log in with your Azure subscription credentials.
+1. On the **NSG-WEB** network security group blade, in the **Settings** section, click **Inbound security rules**. 
 
-2. Select **All services** in the portal's left navigation, then search for and select **Azure Migrate** to open the Azure Migrate Overview blade.
+1. Add an inbound rule with the following settings (leave others with their default values):
 
-3. Select **Assess and migrate servers**, then **Create project**.  Select your subscription and create a new resource group named **RG-SmartHotel**. Enter **SmartHotelMigration** as the Migrate project name, and choose a geography close to you to store the migration assessment data. Then select **Create**.
+    | Setting | Value |
+    | --- | --- |
+    | Source | **Any** |
+    | Source port ranges | * |
+    | Destination | **Any** |
+    | Destination port ranges | **22,80** |
+    | Protocol | **TCP** |
+    | Action | **Allow** |
+    | Priority | **200** |
+    | Name | **Allow-Port_22,80** |
 
-6. The Azure Migrate deployment will start. Once it has completed, you should see the **Azure Migrate: Server Assessment** and **Azure Migrate: Server Migration** panels for the current migration project.
+1. On the **NSG-WEB** network security group blade, in the **Settings** section, click **Network interfaces** and then click **+ Associate**.
 
-1.  Under **Azure Migrate: Server Assessment**, select **Discover** to open the **Discover machines** blade. Under **Are your machines virtualized?**, select **Yes, with Hyper-V**.
+1. Associate the **VMHub01** network security group with the **Network interface**.
 
-2.  In **1: Generate Azure Migrate project key**, provide **SmartHotelAppl** as name for the Azure Migrate appliance that you will set up for discovery of Hyper-V VMs. Select **Generate key** to start the creation of the required Azure resources. 
+    >**Note**: It may take up to 5 minutes for the rules from the newly created Network Security Group to be applied to the Network Interface Card.
 
-3.  **Wait** for the key to be generated, then copy the **Azure Migrate project key** to your clipboard.
+1. Go to the Azure portal to view your **Network security groups**. Search for and select Network security groups.
 
-4.  Read through the instructions on how to download, deploy and configure the Azure Migrate appliance. Close the 'Discover machines' blade (do **not** download the .VHD file or .ZIP file, the .VHD has already been downloaded for you).
+1. Select the name of your Network security group.
 
-5. In a separate browser tab, navigate to the Azure portal. In the global search box, enter **SmartHotelHost**, then select the **SmartHotelHost** virtual machine.
+**Note:** If necessary desatch associated Network security groups.
 
-6. Select **Connect**, select **RDP**, then download the RDP file and connect to the virtual machine using username **demouser** and password **demo!pass123**.
+1. In the menu bar of the network security group, under Settings, you can view the Inbound security rules, Outbound security rules, Network interfaces, and Subnets that the network security group is associated to.
 
-7. In Server Manager, select **Tools**, then **Hyper-V Manager** (if Server Manager does not open automatically, open it by selecting **Start**, then **Server Manager**). In Hyper-V Manager, select **SMARTHOTELHOST**. You should now see a list of the four VMs that comprise the on-premises SmartHotel application.
+1. Under **Support + troubleshooting**, you can view Effective security rules.
 
-8. In Hyper-V Manager, under **Actions**, select **Import Virtual Machine...** to open the **Import Virtual Machine** wizard.
+1. In the Computer windows, start Windows PowerShell and, in the **Administrator: Windows PowerShell** window run the following to set connection test. 
 
-9. At the first step, **Before You Begin**, select **Next**.
+   ```powershell
+   Test-NetConnection -ComputerName PUBLICIPADDRESS -Port 80 -InformationLevel 'Detailed'
+   ```
+1. Examine the output of the command and verify that the connection was successful.
 
-10.  At the **Locate Folder** step, select **Browse** and navigate to **F:\\VirtualMachines\\AzureMigrateAppliance** (the folder name may also include a version number), then choose **Select Folder**, then select **Next**.
+1. Within the computer, start Browser and navigate to **PUBLICIPADDPRESS**.
 
-11. At the **Select Virtual Machine** step, the **AzureMigrateAppliance** VM should already be selected. Select **Next**.
+1. Examine the navegate was successful.
 
-12. At the **Choose Import Type** step, keep the default setting **Register the virtual machine in-place**. Select **Next**.
+## Exercise #05 - Configure Azure VNET Peering (30 minutes)
 
-13. At the **Connect Network** step, you will see an error that the virtual switch previously used by the Azure Migrate appliance could not be found. From the **Connection** drop down, select the **Azure Migrate Switch**, then select **Next**.
+1. In the Azure portal, search for and select **Virtual networks**, and, on the **Virtual networks** blade, click **+ Add**.
 
-    > **Note**:  The Azure Migrate appliance needs access to the Internet to upload data to Azure. It also needs access to the Hyper-V host. However, it does not need direct access to the application VMs running on the Hyper-V host.
-    >
+1. Create a virtual network with the following settings (leave others with their default values):
 
-14. Review the summary page, then select **Finish** to create the Azure Migrate appliance VM.
+    | Setting | Value |
+    | --- | --- |
+    | Subscription | the name of the Azure subscription you will be using in this lab |
+    | Resource Group | the name of a resource group **RG-Network-Spoke1** |
+    | Name | **VNET-Spoke1** |
+    | Region | West US 2 |
+    | IPv4 address space | **172.16.0.0/16** |
+    | Subnet name | **Default** |
+    | Subnet address range | **172.16.1.0/24** |
+     | | |
+      
+1. Accept the defaults and click **Review and Create**. Let validation occur, and hit **Create** again to submit your deployment.
 
-15. In Hyper-V Manager, select the **AzureMigrateAppliance** VM, then select **Start** on the left.
+1. Once the deployment completes browse for **Virtual Networks** in the portal search bar. Within **Virtual networks** blade, click on the newly created virtual network.
 
-1.  In Hyper-V Manager, select the **AzureMigrateAppliance** VM, then select **Connect** on the left.
+1. In the Azure portal, search for and select **Virtual machines**
 
-2.  A new window will open showing the Azure Migrate appliance. Wait for the License terms screen to show, then select **Accept**.
+1. On the **Virtual machines**, click **Add** and create a new Ubuntu Server Virtual machine, on the **VMSpoke1**.
 
-3.  On the **Customize settings** screen, set the Administrator password to **demo!pass123** (twice). Then select **Finish**.
+1. In the Azure portal, search for and select **Virtual networks**.
 
-4.  At the **Connect to AzureMigrateAppliance** prompt, set the appliance screen size using the slider, then select **Connect**.
+1. In the list of virtual networks, click **VNET-Spoke1**.
 
-5.  Log in with the Administrator.
+1. On the **VNET-Spoke1** virtual network blade, in the **Settings** section, click **Peerings** and then click **+ Add**.
 
-6.  **Wait.** After a minute or two, the browser will open showing the Azure Migrate appliance configuration wizard (it can also be launched from the desktop shortcut).
+1. Specify the following settings (leave others with their default values) and click **Add**:
 
-    On opening of the appliance configuration wizard, a pop-up with the license terms will appear. Accept the terms by selecting **I agree**.
+    | Setting | Value|
+    | --- | --- |
+    | This virtual network: Peering link name | **To-Hub** |
+    | This virtual network: Traffic to remote virtual network | **Allow (default)** |
+    | This virtual network: Traffic forwarded from remote virtual network | **Allow (default)** |
+    | Virtual network gateway | **None** |
+    | Remote virtual network: Peering link name | **To-Spoke1** |    
+    | Virtual network deployment model | **Resource manager** |
+    | I know my resource ID | unselected |
+    | Subscription | the name of the Azure subscription you are using in this lab |
+    | Virtual network | **VNET-Hub** |
+    | Traffic to remote virtual network | **Allow (default)** |
+    | Traffic forwarded from remote virtual network | **Allow (default)** |
+    | Virtual network gateway | **None** |
 
-7. Under **Set up prerequisites**, the following two steps to verify Internet connectivity and time synchronization should pass automatically.
- 
-8. **Wait** while the wizard installs the latest Azure Migrate updates. If prompted for credentials, enter user name **Administrator** and password **demo!pass123**. Once the Azure Migrate updates are completed, you may see a pop-up if the management app restart is required, and if so, select **Refresh** to restart the app.  
+1. On the **VNET-Hub** virtual network blade, in the **Settings** section, click **Peerings** and then click **+ Add**.
 
-     Once restarted, the 'Set up prerequisites' steps of the Azure Migrate wizard will re-run automatically. Once the prerequisites are completed, you can proceed to the next panel, **Register with Azure Migrate**.
+1. Add a peering with the following settings (leave others with their default values):
 
-9.  At the next phase of the wizard, **Register with Azure Migrate**, paste the **Azure Migrate project key** copied from the Azure portal earlier. (If you do not have the key, go to **Server Assessment > Discover > Manage existing appliances**, select the appliance name you provided at the time of key generation and copy the corresponding key.)
+    | Setting | Value|
+    | --- | --- |
+    | This virtual network: Peering link name | **To-Spoke1** |
+    | This virtual network: Traffic to remote virtual network | **Allow (default)** |
+    | This virtual network: Traffic forwarded from remote virtual network | ****Allow (default)**** |
+    | Virtual network gateway | **None*** |
+    | Remote virtual network: Peering link name | **To-Hub** |    
+    | Virtual network deployment model | **Resource manager** |
+    | I know my resource ID | unselected |
+    | Subscription | the name of the Azure subscription you are using in this lab |
+    | Virtual network | **VNET-Hub** |
+    | Traffic to remote virtual network | **Allow (default)** |
+    | Traffic forwarded from remote virtual network | **Allow (default)** |
+    | Virtual network gateway | **None** |
 
-10. After you select **Login**, a new window will open asking for a code.  This code is located below the **Azure Migrate project key**.  Copy and paste this code in the login field.  You will then be asked for your Azure portal credentials to complete the login process.
+1. At the top of the Azure portal, enter the name of a **VMSpoke1** that is in the running state, in the search box. When the name of the VM appears in the search results, select it.
 
-11. Select **Login**. This will open an Azure login prompt in a new browser tab (if it doesn't appear, make sure the pop-up blocker in the browser is disabled). Log in using your Azure credentials. Once you have logged in, return to the Azure Migrate Appliance tab and the appliance registration will start automatically.
+1. Under Settings on the left, select **Networking**, and navigate to the network interface resource by selecting its name. View network interfaces.
 
-    Once the registration has completed, you can proceed to the next panel, **Manage credentials and discovery sources**.
+1. On the left, select **Effective routes**. The effective routes for a network interface are shown.
+    
+1. Connect Virtual Machine, in the session SSH.
 
-11. In **Step 1: Provide Hyper-V host credentials**, select **Add credentials**.
+1. In the terminal session, run the following to test connectivity to **VNET-Spoke1**.
 
-12. Specify **hostlogin** as the friendly name for credentials, username **demouser**, and password **demo!pass123** for the Hyper-V host/cluster that the appliance will use to discover VMs. Select **Save**.
+   ```shell
+   telnet IPADDRESSVMHUB 22
+   ```
+    >**Note**: The test uses TCP 22 since this is this port is allowed by default by operating system firewall. 
 
-13. In **Step 2: Provide Hyper-V host/cluster details**, select **Add discovery source** to specify the Hyper-V host/cluster IP address/FQDN and the friendly name for credentials to connect to the host/cluster.
+1. Examine the output of the command and verify that the connection was successful.
 
-14. Select **Add single item**, select **hostlogin** as the friendly name, and enter **SmartHotelHost** under 'IP Address / FQDN'.
+1. Switch in Hub Virtual machine, run the following to test connectivity to **VMNAME-HUB** 
 
-15. Select **Save**. The appliance will validate the connection to the Hyper-V hosts/clusters added and show the **Validation status** in the table against each host/cluster.
+   ```shell
+   telnet IPADDRESSVMSPOKE1 22
+   ```
+1. Examine the output of the command and verify that the connection was successful.
 
-    > **Note:** When adding discovery sources:
-    > -  For successfully validated hosts/clusters, you can view more details by selecting their IP address/FQDN.
-    > -  If validation fails for a host, review the error by selecting the Validation failed in the Status column of the table. Fix the issue and validate again.
- 
-16. Select **Start discovery** to kick off VM discovery from the successfully validated hosts/clusters.
+## Project #01 - Hub-spoke Archicture (90 minutes)
 
-17. Wait for the Azure Migrate status to show **Discovery has been successfully initiated**. This will take several minutes. After the discovery has been successfully initiated, you can check the discovery status against each host/cluster in the table.
+Implement a Hub-spoke topology
 
-18. Return to the **Azure Migrate** blade in the Azure portal.  Select **Servers**, then select **Refresh**.  Under **Azure Migrate: Server Assessment** you should see a count of the number of servers discovered so far. If discovery is still in progress, select **Refresh** periodically until 5 discovered servers are shown. This may take several minutes.
+   ![Screenshot of the Hub-spoke](/AllFiles/Images/Hub-Spoke.png)
 
-    **Wait for the discovery process to complete before proceeding to the next Task**.
+**Important Notes**
+- Three Virtual Networks;
+- Gateway VPN on the Hub network;
+- VNET Peering connection in the hub to allow gateway transit;
+- VNET Peering connection in each spokes to use remote gateways;
+- VNET Peering connections to allow forwarded traffic;
+- Azure Firewall on the Hub network;
+- Custom Route tables to address prefix "0.0.0.0" and next hop type to virtual applicance;
+- Network rule Azure Firewall all traffic;
+- DNAT rules Azure Firewall to destination Hub Virtual machine.
 
-1. Continuing, select **Assess** under **Azure Migrate: Server Assessment** to start a new migration assessment.
+References: [Hub-spoke network topology](https://docs.microsoft.com/en-us/azure/architecture/reference-architectures/hybrid-networking/hub-spoke)
 
-2. On the Assess servers blade, enter **SmartHotelAssessment** as the assessment name.
-
-3. Under **Assessment properties**, select **View all**.
-
-4. The **Assessment properties** blade allows you to tailor many of the settings used when making a migration assessment report. Take a few moments to explore the wide range of assessment properties. Hover over the information icons to see more details on each setting. Choose any settings you like, then select **Save**. (You have to make a change for the Save button to be enabled; if you don't want to make any changes, just close the blade.)
- 
-5. Select **Next** to move to the **Select machines to assess** tab. Choose **Create New** and enter the group name **SmartHotel VMs**. Select the **smarthotelweb1**, **smarthotelweb2**, **smarthotelSQL1** and **UbuntuWAF** VMs.
-
-    **Note:** There is no need to include the **AzureMigrateAppliance** VMs in the assessment, since they will not be migrated to Azure. 
-
-6. Select **Next**, followed by **Create assessment**. On the **Azure Migrate - Servers** blade, select **Refresh** periodically until the number of assessments shown is **1**. This may take several minutes.
-
-7. Select **Assessments** under **Azure Migrate: Server Assessment** to see a list of assessments. Then select the actual assessment.
-
-8. Take a moment to study the assessment overview.
-
-9. Select **Edit properties**. Note how you can now modify the assessment properties you chose earlier. Change a selection of settings, and **Save** your changes. After a few moments, the assessment report will update to reflect your changes.
-
-10. Select **Azure readiness** (either the chart or on the left navigation). Note that for the **UbuntuWAF** VM, a specific concern is listed regarding the readiness of the VM for migration.
-
-11. Select **Unknown OS** for **UbuntuWAF**. A new browser tab opens showing Azure Migrate documentation. Note on the page that the issue relates the OS not being specified in the host hypervisor, so you must confirm the OS type and version is supported.
-
-12. Return to the portal browser tab to see details of the issue. Note the recommendation to migrate the VM using **Azure Migrate: Server Migration**.
-
-13. Take a few minutes to explore other aspects of the migration assessment.
-
-1. Return to the **Azure Migrate** blade in the Azure Portal, and select **Servers**. Under **Azure Migrate: Server Assessment** select **Groups**, then select the **SmartHotel VMs** group to see the group details. Note that each VM has their **Dependencies** status as **Requires agent installation**. Select **Requires agent installation** for the **smarthotelweb1** VM.
-
-2. On the **Dependencies** blade, select **Configure OMS workspace**.
-
-3. Create a new OMS workspace. Use **OMSW-SmartHotel\<unique number\>** as the workspace name, where \<unique number\> is a random number. Choose a workspace location close to your lab deployment, then select **Configure**.
-
-4. Wait for the workspace to be deployed. Once it is deployed, navigate to it and select **Agents management** under **Settings** on the left. Make a note of the **Workspace ID** and **Primary Key** (for example by using Notepad).
-
-5. Return to the Azure Migrate 'Dependencies' blade. Copy each of the 4 agent download URLs and paste them alongside the Workspace ID and key you noted in the previous step. 
-
-6. Return to the RDP session with the **SmartHotelHost**. In **Hyper-V Manager**, select **smarthotelweb1** and select **Connect**.
-
-7. Select **Connect** again when prompted and log in to the **Administrator** account using the password **demo!pass123**.
-
-8. Open **Internet Explorer**, and paste the link to the 64-bit Microsoft Monitoring Agent for Windows, which you noted earlier. When prompted, **Run** the installer.
-
-    > **Note:** You may need to disable **Internet Explorer Enhanced Security Configuration** on **Server Manager** under **Local Server** to complete the download. 
-
-9. Select through the installation wizard until you get to the **Agent Setup Options** page. From there, select **Connect the agent to Azure Log Analytics (OMS)** and select **Next**. Enter the Workspace ID and Workspace Key that you copied earlier, and select **Azure Commercial** from the Azure Cloud drop-down. Select through the remaining pages and install the agent.
-
-10. Paste the link to the Dependency Agent Windows installer into the browser address bar. **Run** the installer and select through the install wizard to complete the installation.
-
-11. Close the virtual machine connection window for the **smarthotelweb1** VM. Connect to the **smarthotelweb2** and **smarthotelSQL1** VMs and repeat the installation process for both agents.
-
-You will now deploy the Linux versions of the Microsoft Monitoring Agent and Dependency Agent on the **UbuntuWAF** VM. To do so, you will first connect to the UbuntuWAF remotely using an SSH session.
-
-12. Return to the RDP session with the **SmartHotelHost** and open a command prompt using the desktop shortcut.  
-
-13. Enter the following command to connect to the **UbuntuWAF** VM running in Hyper-V on the SmartHotelHost:
-
-    ```bash
-    ssh demouser@192.168.0.8
-    ```
-
-14. Enter 'yes' when prompted whether to connect. Use the password **demo!pass123**.
-
-15. Enter the following command, followed by the password **demo!pass123** when prompted:
-
-    ```s
-    sudo -s
-    ```
-
-    This gives the terminal session elevated privileges.
-
-16. Enter the following command, substituting \<Workspace ID\> and \<Workspace Key\> with the values copied previously. Answer **<Yes>** when prompted to restart services during package upgrades without asking. 
-
-    ```s
-    wget https://raw.githubusercontent.com/Microsoft/OMS-Agent-for-Linux/master/installer/scripts/onboard_agent.sh && sh onboard_agent.sh -w <Workspace ID> -s <Workspace Key>
-    ```
-
-17. Enter the following command, substituting \<Workspace ID\> with the value copied earlier:
-
-    ```s
-    /opt/microsoft/omsagent/bin/service_control restart <Workspace ID>
-    ```
-
-18. Enter the following command. This downloads a script that will install the Dependency Agent.
-
-    ```s
-    wget --content-disposition https://aka.ms/dependencyagentlinux -O InstallDependencyAgent-Linux64.bin
-    ```
-
-19. Install the dependency agent by running the script download in the previous step.
-
-    ```s
-    sh InstallDependencyAgent-Linux64.bin -s
-    ```
-
-20. The agent installation is now complete. Next, you need to generate some traffic on the SmartHotel application so the dependency visualization has some data to work with. Browse to the public IP address of the SmartHotelHost, and spend a few minutes refreshing the page and checking guests in and out.
- 
-1. Return to the Azure Portal and refresh the Azure Migrate **SmartHotel VMs** VM group blade. The 3 VMs on which the dependency agent was installed should now show their status as 'Installed'. (If not, refresh the page **using the browser refresh button**, not the refresh button in the blade.  It may take up to **5 minutes** after installation for the status to be updated.)
-
-2. Select **View dependencies**.
-
-3. Take a few minutes to explore the dependencies view. Expand each server to show the processes running on that server. Select a process to see process information. See which connections each server makes.
-
-## Lab #03 - Azure Migrate: Server Migration (60 minutes)
-
-1. In the Azure portal's left navigation, select **+ Create a resource**, then search for and select **Storage account**, followed by **Create**.
-
-2. In the **Create storage account** blade, on the **Basics** tab, use the following values:
-
-    - Subscription: **Select your Azure subscription**.
-  
-    - Resource group: (create new) **RG-SmartHotel**
-  
-    - Storage account name: **sasmarthotelmigrate\[unique number\]**
-  
-    - Location: **East US 2**
-  
-    - Account kind: **Storage (general purpose v2)**.
-  
-    - Replication: **Locally-redundant storage (LRS)**
-
-3. Select **Review + create**, then select **Create**.
-
-1. In the Azure portal's left navigation, select **+ Create a resource**, then select **Networking**, followed by **Virtual network**.
-
-2. In the **Create virtual network** blade, enter the following values:
-
-    - Subscription: **Select your Azure subscription**.
-  
-    - Resource group: **RG-SmartHotel**
-  
-    - Name: **VNET-SmartHotel**
-  
-    - Region: **East US 2**
- 
-3. Select **Next: IP Addresses >**, and enter the following configuration. Then select **Review + create**, then **Create**.
-
-    - IPv4 address space: **192.168.0.0/16** 
-  
-    - Subnet: Select **Add subnet** and enter the following then select **Add**
-
-        - Subnet name: **SmartHotel**
-   
-        - Address range: **192.168.0.0/24**
-   
-7.  On the **Configuration** tab, enter the following configuration then select **Review + Create** then **Create**.
-
-8. **Wait** for the deployment to complete.
-
-1. Return to the **Azure Migrate** blade in the Azure Portal, and select **Servers** under **Migration goals** on the left. Under **Migration Tools**, select **Discover**.
-
-    **Note:** You may need to add the migration tool yourself by following the link below the **Migration Tools** section, selecting **Azure Migrate: Server Migration**, then selecting **Add tool(s)**. 
-
-2. In the **Discover machines** panel, under **Are your machines virtualized**, select **Yes, with Hyper-V**. Under **Target region**, which can be found in the Azure portal and check the confirmation checkbox. Select **Create resources** to begin the deployment of the Azure Site Recovery resource used by Azure Migrate: Server Migration for Hyper-V migrations.
-
-    Once deployment is complete, the 'Discover machines' panel should be updated with additional instructions.
-  
-3. Copy the **Download** link for the Hyper-V replication provider software installer to your clipboard.
-
-4. Open the **SmartHotelHost** remote desktop window, launch **Chrome** from the desktop shortcut, and paste the link into a new browser tab to download the Azure Site Recovery provider installer.
-
-5. Return to the **Discover machines** page in your browser (outside the SmartHotelHost remote desktop session). Select the blue **Download** button and download the registration key file.
-
-6. Open the file location in Windows Explorer, and copy the file to your clipboard. Return to the **SmartHotelHost** remote desktop session and paste the file to the desktop.
-
-7. Still within the **SmartHotelHost** remote desktop session, open the **AzureSiteRecoveryProvider.exe** installer you downloaded a moment ago. On the **Microsoft Update** tab, select **Off** and select **Next**. Accept the default installation location and select **Install**.
-
-8. When the installation has completed select **Register**. Browse to the location of the key file you downloaded. When the key is loaded select **Next**.
-
-9.  Select **Connect directly to Azure Site Recovery without a proxy server** and select **Next**. The registration of the Hyper-V host with Azure Site Recovery will begin.
-
-10. Wait for registration to complete (this may take several minutes). Then select **Finish**.
-
-11. Minimize the SmartHotelHost remote desktop session and return to the Azure Migrate browser window. **Refresh** your browser, then re-open the **Discover machines** panel by selecting **Discover** under **Azure Migrate: Server Migration** and selecting **Yes, with Hyper-V** for **Are your machines virtualized?**.
-
-12. Select **Finalize registration**, which should now be enabled.
-
-13. Azure Migrate will now complete the registration with the Hyper-V host. **Wait** for the registration to complete. This may take several minutes.
-
-14. Once the registration is complete, close the **Discover machines** panel.
-
-16. The **Azure Migrate: Server Migration** panel should now show 5 discovered servers.
-
-1. Under **Azure Migrate: Server Migration**, select **Replicate**. This opens the **Replicate** wizard.
-
-2. In the **Source settings** tab, under **Are your machines virtualized?**, select **Yes, with Hyper-V** from the drop-down. Then select **Next**.
-
-3. In the **Virtual machines** tab, under **Import migration settings from an assessment**, select **Yes, apply migration settings from an Azure Migrate assessment**. Select the **SmartHotel VMs** VM group and the **SmartHotelAssessment** migration assessment.
-
-4. The **Virtual machines** tab should now show the virtual machines included in the assessment. Select the **UbuntuWAF**, **smarthotelweb1**, **smarthotelweb2** and **smarthotelSQL1** virtual machines, then select **Next**.
-
-5. In the **Target settings** tab, select your subscription and the existing **RG-SmartHotel** resource group. Under **Replication storage account** select the **sasmarthotelmigrate...** storage account and under **Virtual Network** select **VNET-SmartHotel**. Under **Subnet** select **SmartHotel**. Select **Next**.
-
-    > **Note:** For simplicity, in this lab you will not configure the migrated VMs for high availability, since each application tier is implemented using a single VM.
-
-6. In the **Compute** tab, select the **Standard_B2s** VM size for each virtual machine. Select the **Windows** operating system for the **smarthotelweb** virtual machines and the **Linux** operating system for the **UbuntuWAF** virtual machine. Select **Next**. 
-
-    > **Note**: If you are using an Azure Pass subscription, your subscription may not have a quota allocated for B2s virtual machines. In this case, use other virtual machines instead.
-
-7. In the **Disks** tab, review the settings but do not make any changes. Select **Next**, then select **Replicate** to start the server replication.
-
-8. In the **Azure Migrate - Servers** blade, under **Azure Migrate: Server Migration**, select the **Overview** button.
-
-9. Confirm that the 4 machines are replicating.
-
-10. Select **Replicating Machines** under **Manage** on the left.  Select **Refresh** occasionally and wait until all three machines have a **Protected** status, which shows the initial replication is complete. This will take several minutes.
-
-1. Still using the **Azure Migrate: Server Migration - Replicating machines** blade, select the **smarthotelweb1** virtual machine. This opens a detailed migration and replication blade for this machine. Take a moment to study this information.
-
-2. Select **Compute and Network** under **General** on the left, then select **Edit**.
-
-3. Confirm that the VM is configured to use the **B2s** VM size (or other if using an Azure Pass subscription) and that **Use managed disks** is set to **Yes**.
-
-4. Under **Network Interfaces**, select **InternalNATSwitch** to open the network interface settings.
-
-5. Change the **Private IP address** to **192.168.0.4**.
-
-6. Select **OK** to close the network interface settings blade, then **Save** the **smarthotelweb1** settings.
-
-7. Repeat these steps to configure the private IP address for the other VMs.
- 
-    - For **smarthotelweb2** use private IP address **192.168.0.5**
-
-    - For **smarthotelSQL1** use private IP address **192.168.0.6**
-  
-    - For **UbuntuWAF** use private IP address **192.168.0.8**
-
-1. Return to the **Azure Migrate: Server Migration** overview blade. Under **Step 3: Migrate**, select **Migrate**.
-
-2. On the **Migrate** blade, select the 4 virtual machines then select **Migrate** to start the migration process.
-
-    > **Note**: You can optionally choose whether the on-premises virtual machines should be automatically shut down before migration to minimize data loss. Either setting will work for this lab.
-
-3. The migration process will start.
-
-4. To monitor progress, select **Jobs** under **Manage** on the left and review the status of the three **Planned failover** jobs.
-
-5. **Wait** until all three **Planned failover** jobs show a **Status** of **Successful**. You should not need to refresh your browser. This could take up to 15 minutes.
-
-6. Navigate to the **RG-SmartHotel** resource group and check that the VM, network interface, and disk resources have been created for each of the virtual machines being migrated.
-
-1. The application tier machine **smarthotelweb2** is configured to connect to the application database running on the **smarthotelsql** machine.
-
-> **Note**: You do not need to update any configuration files on **smarthotelweb1** or the **UbuntuWAF** VMs, since the migration has preserved the private IP addresses of all virtual machines they connect with.
-
-1. Navigate to the **UbuntuWAF** VM blade, select **Networking** under **Settings** on the left, then select the network interface.
-
-2. Select **IP configuration** under **Settings** on the left, then select the IP configuration listed.
-
-3. Set the **Public IP address** to **Associate**, and create a new public IP address named **PI-UbuntuWAF**. Choose a **Basic** tier IP address with **Dynamic** assignment. **Save** your changes.
-
-4. Return to the **UbuntuWAF** VM overview blade and copy the **Public IP address** value.
-
-5. Open a new browser tab and paste the IP address into the address bar. Verify that the SmartHotel360 application is now available in Azure.
-
-1. End of day and **Workshop Day 01**.
+1. End of day and **Workshop Day 02**.
 
 1. Continue in the **Mentoria Arquiteto Cloud**.
