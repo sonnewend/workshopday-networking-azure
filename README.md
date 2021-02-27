@@ -194,7 +194,7 @@ Hands-on Lab
 
 1. Under **Support + troubleshooting**, you can view Effective security rules.
 
-1. In the Computer windows, start Windows PowerShell and, in the **Administrator: Windows PowerShell** window run the following to set connection test. 
+1. In the Desktop, start Windows PowerShell and, in the **Administrator: Windows PowerShell** window run the following to set connection test. 
 
    ```powershell
    Test-NetConnection -ComputerName PUBLICIPADDRESS -Port 80 -InformationLevel 'Detailed'
@@ -262,7 +262,7 @@ Hands-on Lab
     | This virtual network: Peering link name | **To-Spoke1** |
     | This virtual network: Traffic to remote virtual network | **Allow (default)** |
     | This virtual network: Traffic forwarded from remote virtual network | ****Allow (default)**** |
-    | Virtual network gateway | **None*** |
+    | Virtual network gateway | **None** |
     | Remote virtual network: Peering link name | **To-Hub** |    
     | Virtual network deployment model | **Resource manager** |
     | I know my resource ID | unselected |
@@ -278,7 +278,7 @@ Hands-on Lab
 
 1. On the left, select **Effective routes**. The effective routes for a network interface are shown.
     
-1. Connect Virtual Machine, in the session SSH.
+1. Connect Spoke1 Virtual Machine, in the session SSH.
 
 1. In the terminal session, run the following to test connectivity to **VNET-Spoke1**.
 
