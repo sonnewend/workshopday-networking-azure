@@ -3,7 +3,7 @@
 Hands-on Lab
 
 ## Workshop Day
-## Exercise #01 - Deploy Virtual Networks (30 minutes)
+## Exercise #01 - Deploy Virtual Networks (15 minutes)
 
 1. In the Azure portal, search for and select **Virtual networks**, and, on the **Virtual networks** blade, click **+ Add**.
 
@@ -38,7 +38,7 @@ Hands-on Lab
 
 1. Explore properties to Virtual networks.
 
-## Exercise #02 - Deploy Virtual Machine (30 minutes)
+## Exercise #01.1 - Deploy Virtual Machine (15 minutes)
 
 1. In the Azure portal, search for and select **Virtual machines** and, on the **Virtual machines** blade, click **+ Add**.
 
@@ -289,7 +289,7 @@ Hands-on Lab
 
 1. Examine the output of the command and verify that the connection was successful.
 
-1. Switch in Hub Virtual machine, run the following to test connectivity to **VMNAME-HUB** 
+1. Switch in Hub Virtual machine, run the following to test connectivity to **VMHub01** 
 
    ```shell
    telnet IPADDRESSVMSPOKE1 22
