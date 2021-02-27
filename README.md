@@ -99,7 +99,7 @@ Hands-on Lab
 
 1. Connect Virtual machine.
 
-## Exercise #03 - Configure Azure DNS for internal name resolution (30 minutes)
+## Exercise #02 - Configure Azure DNS for internal name resolution (30 minutes)
 
 1. In the Azure portal, search for and select **Private DNS zones** and, on the **Private DNS zones** blade, click **+ Add**.
 
@@ -148,7 +148,7 @@ Hands-on Lab
 
 1. Verify that the output of the command includes the private IP address of **VMHub01**.
 
-## Exercise #04 - Network Security groups (30 minutes)
+## Exercise #03 - Network Security groups (30 minutes)
 
 1. In the Azure portal, search for and select **Network security groups**, and, on the **Network security groups** blade, click **+ Add**.
 
@@ -205,7 +205,7 @@ Hands-on Lab
 
 1. Examine the navegate was successful.
 
-## Exercise #05 - Configure Azure VNET Peering (30 minutes)
+## Exercise #04 - Configure Azure VNET Peering (30 minutes)
 
 1. In the Azure portal, search for and select **Virtual networks**, and, on the **Virtual networks** blade, click **+ Add**.
 
