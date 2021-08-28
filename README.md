@@ -38,7 +38,7 @@ Hands-on Lab
 
 1. Explore properties to Virtual networks.
 
-## Exercise #01.1 - Deploy Virtual Machine (15 minutes)
+## Exercise #01.1 - Deploy Virtual Machine (20 minutes)
 
 1. In the Azure portal, search for and select **Virtual machines** and, on the **Virtual machines** blade, click **+ Add**.
 
@@ -310,8 +310,7 @@ Implement a Hub-spoke topology
 - VNET Peering connection in each spokes to use remote gateways;
 - Azure Bastion on the Hub network;
 - Azure Firewall on the Hub network;
-- Custom Route tables to address prefix "Address Space destination" and next hop type to virtual applicance;
-- Custom Route tables to address prefix "0.0.0.0/0" and next hop type to virtual applicance;
+- Custom Route tables to address prefix "Address Space networking destination" and next hop type to virtual applicance;
 - Network rule Azure Firewall all traffic.
 
 References: [Hub-spoke network topology](https://docs.microsoft.com/en-us/azure/architecture/reference-architectures/hybrid-networking/hub-spoke)
