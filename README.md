@@ -296,7 +296,7 @@ Hands-on Lab
    ```
 1. Examine the output of the command and verify that the connection was successful.
 
-## Project - Deploy Hub-spoke Archicture (90 minutes)
+## Project - Deploy Hub-spoke Archicture (60 minutes)
 
 Implement a Hub-spoke topology
 
