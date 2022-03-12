@@ -132,7 +132,7 @@ Hands-on Lab
 
     >**Note:** Wait for the virtual network link to be created. This should take less than 1 minute.
 
-1. On the **azureexpert.corp** private DNS zone blade, in the sidebar, click **Overview**
+1. On the **arquitetocloud.corp** private DNS zone blade, in the sidebar, click **Overview**
 
 1. Verify that the DNS records for **VMHub01** appear in the list of record sets as **Auto registered**.
 
@@ -140,10 +140,10 @@ Hands-on Lab
 
 1. Switch to the SSH session to **VMHub01**.
 
-1. In the Terminal console, run the following to test internal name resolution of the **az104-04-vm1** DNS record set in the newly created private DNS zone:
+1. In the Terminal console, run the following to test internal name resolution of the **VMHub01** DNS record set in the newly created private DNS zone:
 
    ```shell
-   nslookup vmhub01.azureexpert.corp
+   nslookup vmhub01.arquitetocloud.corp
    ```
 
 1. Verify that the output of the command includes the private IP address of **VMHub01**.
