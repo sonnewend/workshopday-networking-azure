@@ -56,7 +56,7 @@ Hands-on Lab
     | Size | **Standard_B1ms** |
     | Authentication type | Password |
     | Username | **admaz** |
-    | Password | **Azur3Exp3rt*** |
+    | Password | **Arqu1t3t0Cl0ud*** |
     | Public inbound ports | **SSH (22)** |
      | | |
 
@@ -109,15 +109,15 @@ Hands-on Lab
     | --- | --- |
     | Subscription | the name of the Azure subscription you are using in this lab |
     | Resource Group | **RG-Network-Hub** |
-    | Name | **azureexpert.corp** |
+    | Name | **arquitetocloud.corp** |
 
 1. Click Review and Create. Let validation occur, and hit Create again to submit your deployment.
 
     >**Note**: Wait for the private DNS zone to be created. This should take about 2 minutes.
 
-1. Click **Go to resource** to open the **azureexpert.corp** DNS private zone blade.
+1. Click **Go to resource** to open the **arquitetocloud.corp** DNS private zone blade.
 
-1. On the **azureexpert.corp** private DNS zone blade, in the **Settings** section, click **Virtual network links**
+1. On the **arquitetocloud.corp** private DNS zone blade, in the **Settings** section, click **Virtual network links**
 
 1. Click **+ Add** to create a virtual network link with the following settings (leave others with their default values):
 
@@ -176,7 +176,7 @@ Hands-on Lab
     | Protocol | **TCP** |
     | Action | **Allow** |
     | Priority | **200** |
-    | Name | **Allow-Port_22,80** |
+    | Name | **Allow-Port_22-80** |
 
 1. On the **NSG-WEB** network security group blade, in the **Settings** section, click **Network interfaces** and then click **+ Associate**.
 
@@ -197,11 +197,11 @@ Hands-on Lab
 1. In the Desktop, start Windows PowerShell and, in the **Administrator: Windows PowerShell** window run the following to set connection test. 
 
    ```powershell
-   Test-NetConnection -ComputerName PUBLICIPADDRESS -Port 80 -InformationLevel 'Detailed'
+   Test-NetConnection -ComputerName VMPUBLICIPADDRESS -Port 80 -InformationLevel 'Detailed'
    ```
 1. Examine the output of the command and verify that the connection was successful.
 
-1. Within the computer, start Browser and navigate to **PUBLICIPADDPRESS**.
+1. Within the computer, start Browser and navigate to **VMPUBLICIPADDPRESS**.
 
 1. Examine the navegate was successful.
 
@@ -283,7 +283,7 @@ Hands-on Lab
 1. In the terminal session, run the following to test connectivity to **VNET-Spoke1**.
 
    ```shell
-   telnet IPADDRESSVMHUB 22
+   telnet VMHUBIPADDRESS 22
    ```
     >**Note**: The test uses TCP 22 since this is this port is allowed by default by operating system firewall. 
 
@@ -292,7 +292,7 @@ Hands-on Lab
 1. Switch in Hub Virtual machine, run the following to test connectivity to **VMHub01** 
 
    ```shell
-   telnet IPADDRESSVMSPOKE1 22
+   telnet VMSPOKE1IPADDRESS 22
    ```
 1. Examine the output of the command and verify that the connection was successful.
 
@@ -311,10 +311,10 @@ Implement a Hub-spoke topology
 - Azure Bastion on the Hub network;
 - Azure Firewall on the Hub network;
 - Custom Route tables to address prefix "Address Space networking destination" and next hop type to virtual applicance;
-- Network rule Azure Firewall all traffic.
+- Network rule Azure Firewall all internal traffic.
 
 References: [Hub-spoke network topology](https://docs.microsoft.com/en-us/azure/architecture/reference-architectures/hybrid-networking/hub-spoke)
 
 1. End of day and **Workshop Day 02**.
 
-1. Continue in the **Mentoria Arquiteto Cloud**.
+1. Continue in the **Mentoria Arquiteto Cloud**.s
